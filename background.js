@@ -1,19 +1,36 @@
-const ksc = /https:\/\/.*\.kelsey-seybold\.com/;
-const sitecore = /https:\/\/.*\.ksnet\.com/;
-const uatPattern = /uatnew-www\./;
+const DEFAULTS = {
+    prodSub: "www.",
+    uatSub: "uatnew-www.",
+    domains: ["kelsey-seybold.com", "ksnet.com"],
+};
 
-function isKscSite(url) {
-    return url && (url.match(ksc) || url.match(sitecore));
+let settings = { ...DEFAULTS };
+
+function loadSettings() {
+    return new Promise((resolve) => {
+        chrome.storage.sync.get(DEFAULTS, (result) => {
+            settings = result;
+            resolve();
+        });
+    });
+}
+
+function matchesDomain(url) {
+    if (!url) return false;
+    return settings.domains.some((domain) => {
+        const escaped = domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        return new RegExp(`https://.*\\.${escaped}`).test(url);
+    });
 }
 
 function isUat(url) {
-    return uatPattern.test(url);
+    return url.includes(settings.uatSub);
 }
 
 async function updateBadge(tabId, url) {
-    if (!isKscSite(url)) {
+    if (!matchesDomain(url)) {
         await chrome.action.setBadgeText({ tabId, text: "" });
-        await chrome.action.setTitle({ tabId, title: "Not on a KSC site" });
+        await chrome.action.setTitle({ tabId, title: "Not on a configured site" });
         return;
     }
 
@@ -27,6 +44,19 @@ async function updateBadge(tabId, url) {
         await chrome.action.setTitle({ tabId, title: "Switch to UAT" });
     }
 }
+
+// Load settings on startup
+loadSettings();
+
+// Reload settings when they change
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "sync") {
+        loadSettings().then(async () => {
+            const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+            if (tab) updateBadge(tab.id, tab.url);
+        });
+    }
+});
 
 // Update badge when a tab's URL changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
@@ -43,7 +73,7 @@ chrome.tabs.onActivated.addListener(async ({ tabId }) => {
 
 // Single click to switch environments
 chrome.action.onClicked.addListener(async (tab) => {
-    if (isKscSite(tab.url)) {
+    if (matchesDomain(tab.url)) {
         await chrome.scripting.executeScript({
             files: ["switch.js"],
             target: { tabId: tab.id },

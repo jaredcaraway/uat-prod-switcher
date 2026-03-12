@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAT-PROD Switcher — Settings</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #0f172a;
+            color: #e2e8f0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 48px 24px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 560px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #94a3b8;
+        }
+
+        .card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .card-description {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+        }
+
+        .field-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .field {
+            flex: 1;
+        }
+
+        .field:last-child {
+            margin-bottom: 0;
+        }
+
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 6px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #f1f5f9;
+            font-size: 14px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        input[type="text"]::placeholder {
+            color: #475569;
+        }
+
+        .domain-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .domain-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .domain-item input {
+            flex: 1;
+        }
+
+        .btn-remove {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #ef4444;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            flex-shrink: 0;
+        }
+
+        .btn-remove:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: #ef4444;
+        }
+
+        .btn-remove:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .btn-remove:disabled:hover {
+            background: transparent;
+            border-color: #334155;
+        }
+
+        .btn-add {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 14px;
+            background: transparent;
+            border: 1px dashed #475569;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 13px;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .btn-add:hover {
+            border-color: #6366f1;
+            color: #c7d2fe;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 32px;
+        }
+
+        .btn-save {
+            padding: 10px 28px;
+            background: #6366f1;
+            border: none;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .btn-save:hover {
+            background: #4f46e5;
+        }
+
+        .btn-save:active {
+            transform: scale(0.97);
+        }
+
+        .btn-reset {
+            padding: 10px 20px;
+            background: transparent;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #94a3b8;
+            font-size: 14px;
+            cursor: pointer;
+            transition: border-color 0.15s, color 0.15s;
+        }
+
+        .btn-reset:hover {
+            border-color: #64748b;
+            color: #e2e8f0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            padding: 12px 24px;
+            background: #10b981;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            border-radius: 8px;
+            opacity: 0;
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .toast.visible {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .shortcut-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #818cf8;
+            font-size: 13px;
+            text-decoration: none;
+            cursor: pointer;
+            transition: color 0.15s;
+        }
+
+        .shortcut-link:hover {
+            color: #a5b4fc;
+        }
+
+        .shortcut-info {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .shortcut-info kbd {
+            padding: 3px 8px;
+            background: #334155;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 12px;
+            color: #e2e8f0;
+        }
+
+        .shortcut-info span {
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .preview {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            margin-top: 8px;
+        }
+
+        .preview-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .preview-badge.uat {
+            background: #F59E0B;
+            color: #000;
+        }
+
+        .preview-badge.prod {
+            background: #10B981;
+            color: #fff;
+        }
+
+        .preview-arrow {
+            color: #475569;
+            font-size: 18px;
+        }
+
+        .preview-url {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .preview-url em {
+            font-style: normal;
+            color: #e2e8f0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>UAT-PROD Switcher</h1>
+            <p>Configure environments and domains for one-click switching.</p>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Subdomains</div>
+            <div class="card-description">Define the subdomain prefixes for each environment.</div>
+            <div class="field-group">
+                <div class="field">
+                    <label for="prodSub">Production</label>
+                    <input type="text" id="prodSub" placeholder="www.">
+                </div>
+                <div class="field">
+                    <label for="uatSub">UAT</label>
+                    <input type="text" id="uatSub" placeholder="uatnew-www.">
+                </div>
+            </div>
+            <div class="preview" id="preview">
+                <span class="preview-badge prod">PRD</span>
+                <span class="preview-url"><em id="previewProd">www.</em>example.com</span>
+                <span class="preview-arrow">&harr;</span>
+                <span class="preview-badge uat">UAT</span>
+                <span class="preview-url"><em id="previewUat">uatnew-www.</em>example.com</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Domains</div>
+            <div class="card-description">The extension activates only on these domains. Add your own to use it beyond Kelsey-Seybold.</div>
+            <div class="domain-list" id="domainList"></div>
+            <button class="btn-add" id="addDomain">+ Add domain</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Keyboard Shortcut</div>
+            <div class="card-description">Quickly switch environments without clicking.</div>
+            <div class="shortcut-info">
+                <span>Current shortcut</span>
+                <kbd>Alt + Shift + U</kbd>
+            </div>
+            <div style="margin-top: 12px;">
+                <a class="shortcut-link" id="openShortcuts">Change in Chrome settings &rarr;</a>
+            </div>
+        </div>
+
+        <div class="actions">
+            <button class="btn-save" id="save">Save settings</button>
+            <button class="btn-reset" id="reset">Reset defaults</button>
+        </div>
+    </div>
+
+    <div class="toast" id="toast">Settings saved</div>
+
+    <script src="options.js"></script>
+</body>
+</html>

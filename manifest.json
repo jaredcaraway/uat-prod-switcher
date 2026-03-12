@@ -15,7 +15,8 @@
     "action": {
         "default_title": "UAT-PROD Switcher"
     },
-    "permissions": ["activeTab", "scripting", "tabs"],
+    "options_page": "options.html",
+    "permissions": ["activeTab", "scripting", "tabs", "storage"],
     "commands": {
         "_execute_action": {
             "suggested_key": {
