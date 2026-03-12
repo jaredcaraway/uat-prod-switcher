@@ -2,6 +2,7 @@ const DEFAULTS = {
     prodSub: "www.",
     uatSub: "uatnew-www.",
     domains: ["kelsey-seybold.com", "ksnet.com"],
+    showBanner: true,
 };
 
 const domainListEl = document.getElementById("domainList");
@@ -9,6 +10,8 @@ const prodSubEl = document.getElementById("prodSub");
 const uatSubEl = document.getElementById("uatSub");
 const previewProdEl = document.getElementById("previewProd");
 const previewUatEl = document.getElementById("previewUat");
+const showBannerEl = document.getElementById("showBanner");
+const bannerPreviewEl = document.getElementById("bannerPreview");
 
 function createDomainRow(value, canRemove) {
     const row = document.createElement("div");
@@ -70,6 +73,8 @@ function showToast(message) {
 chrome.storage.sync.get(DEFAULTS, (settings) => {
     prodSubEl.value = settings.prodSub;
     uatSubEl.value = settings.uatSub;
+    showBannerEl.checked = settings.showBanner;
+    bannerPreviewEl.style.opacity = settings.showBanner ? "1" : "0.3";
     renderDomains(settings.domains);
     updatePreview();
 });
@@ -77,6 +82,11 @@ chrome.storage.sync.get(DEFAULTS, (settings) => {
 // Live preview
 prodSubEl.addEventListener("input", updatePreview);
 uatSubEl.addEventListener("input", updatePreview);
+
+// Banner toggle preview
+showBannerEl.addEventListener("change", () => {
+    bannerPreviewEl.style.opacity = showBannerEl.checked ? "1" : "0.3";
+});
 
 // Add domain
 document.getElementById("addDomain").addEventListener("click", () => {
@@ -99,6 +109,7 @@ document.getElementById("save").addEventListener("click", () => {
             prodSub: prodSubEl.value.trim() || DEFAULTS.prodSub,
             uatSub: uatSubEl.value.trim() || DEFAULTS.uatSub,
             domains,
+            showBanner: showBannerEl.checked,
         },
         () => showToast("Settings saved")
     );
@@ -108,6 +119,8 @@ document.getElementById("save").addEventListener("click", () => {
 document.getElementById("reset").addEventListener("click", () => {
     prodSubEl.value = DEFAULTS.prodSub;
     uatSubEl.value = DEFAULTS.uatSub;
+    showBannerEl.checked = DEFAULTS.showBanner;
+    bannerPreviewEl.style.opacity = "1";
     renderDomains(DEFAULTS.domains);
     updatePreview();
     chrome.storage.sync.set(DEFAULTS, () => showToast("Defaults restored"));

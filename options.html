@@ -326,6 +326,108 @@
             font-style: normal;
             color: #e2e8f0;
         }
+
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 16px;
+            background: #0f172a;
+            border-radius: 8px;
+            border: 1px solid #334155;
+        }
+
+        .toggle-row-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .toggle-row-label {
+            font-size: 14px;
+            color: #e2e8f0;
+        }
+
+        .toggle-row-hint {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-track {
+            position: absolute;
+            inset: 0;
+            background: #334155;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-track::after {
+            content: "";
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 18px;
+            height: 18px;
+            background: #94a3b8;
+            border-radius: 50%;
+            transition: transform 0.2s, background 0.2s;
+        }
+
+        .toggle input:checked + .toggle-track {
+            background: #6366f1;
+        }
+
+        .toggle input:checked + .toggle-track::after {
+            transform: translateX(20px);
+            background: #fff;
+        }
+
+        .banner-preview {
+            margin-top: 12px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1px solid #334155;
+        }
+
+        .banner-preview-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 32px;
+            background: #F59E0B;
+            color: #000;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+        }
+
+        .banner-preview-page {
+            height: 48px;
+            background: #0f172a;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+        }
+
+        .banner-preview-page span {
+            font-size: 11px;
+            color: #475569;
+        }
     </style>
 </head>
 <body>
@@ -362,6 +464,27 @@
             <div class="card-description">The extension activates only on these domains. Add your own to use it beyond Kelsey-Seybold.</div>
             <div class="domain-list" id="domainList"></div>
             <button class="btn-add" id="addDomain">+ Add domain</button>
+        </div>
+
+        <div class="card">
+            <div class="card-title">Environment Banner</div>
+            <div class="card-description">Show a persistent banner on UAT pages so you always know which environment you're in.</div>
+            <div class="toggle-row">
+                <div class="toggle-row-text">
+                    <span class="toggle-row-label">Show UAT banner</span>
+                    <span class="toggle-row-hint">Displays an amber bar at the top of UAT pages</span>
+                </div>
+                <label class="toggle">
+                    <input type="checkbox" id="showBanner" checked>
+                    <span class="toggle-track"></span>
+                </label>
+            </div>
+            <div class="banner-preview" id="bannerPreview">
+                <div class="banner-preview-bar">UAT ENVIRONMENT</div>
+                <div class="banner-preview-page">
+                    <span>Page content pushed down by 32px</span>
+                </div>
+            </div>
         </div>
 
         <div class="card">
