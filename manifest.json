@@ -1,0 +1,27 @@
+{
+    "manifest_version": 3,
+    "name": "UAT-PROD switcher",
+    "description": "Quickly toggle between UAT and PROD environments without having to move your cursor and type.",
+    "version": "1.0",
+    "background": {
+        "service_worker": "background.js"
+    },
+    "icons": {
+        "16": "images/icon16.png",
+        "32": "images/icon32.png",
+        "48": "images/icon48.png",
+        "128": "images/icon128.png"
+    },
+    "action": {
+
+    },
+    "permissions": ["activeTab", "scripting"],
+    "commands": {
+        "_execute_action": {
+            "suggested_key": {
+                "default": "Alt+Shift+U",
+                "mac": "Alt+Shift+U"
+            }
+        }
+    }
+}
