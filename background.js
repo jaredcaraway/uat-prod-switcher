@@ -28,20 +28,27 @@ function isUat(url) {
     return url.includes(settings.uatSub);
 }
 
-async function updateBadge(tabId, url) {
+async function updateIcon(tabId, url) {
     if (!matchesDomain(url)) {
-        await chrome.action.setBadgeText({ tabId, text: "" });
+        await chrome.action.setIcon({
+            tabId,
+            path: { 16: "images/icon16.png", 32: "images/icon32.png", 48: "images/icon48.png", 128: "images/icon128.png" },
+        });
         await chrome.action.setTitle({ tabId, title: "Not on a configured site" });
         return;
     }
 
     if (isUat(url)) {
-        await chrome.action.setBadgeText({ tabId, text: "UAT" });
-        await chrome.action.setBadgeBackgroundColor({ tabId, color: "#F59E0B" });
+        await chrome.action.setIcon({
+            tabId,
+            path: { 16: "images/uat/icon16.png", 32: "images/uat/icon32.png", 48: "images/uat/icon48.png", 128: "images/uat/icon128.png" },
+        });
         await chrome.action.setTitle({ tabId, title: "Switch to PROD" });
     } else {
-        await chrome.action.setBadgeText({ tabId, text: "PRD" });
-        await chrome.action.setBadgeBackgroundColor({ tabId, color: "#10B981" });
+        await chrome.action.setIcon({
+            tabId,
+            path: { 16: "images/prod/icon16.png", 32: "images/prod/icon32.png", 48: "images/prod/icon48.png", 128: "images/prod/icon128.png" },
+        });
         await chrome.action.setTitle({ tabId, title: "Switch to UAT" });
     }
 }
@@ -66,7 +73,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
     if (area === "sync") {
         loadSettings().then(async () => {
             const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
-            if (tab) updateBadge(tab.id, tab.url);
+            if (tab) updateIcon(tab.id, tab.url);
         });
     }
 });
@@ -74,7 +81,7 @@ chrome.storage.onChanged.addListener((changes, area) => {
 // Update badge and inject banner when a tab's URL changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.url || changeInfo.status === "complete") {
-        updateBadge(tabId, tab.url);
+        updateIcon(tabId, tab.url);
     }
     if (changeInfo.status === "complete") {
         injectBanner(tabId, tab.url);
@@ -84,7 +91,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 // Update badge when switching tabs
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
     const tab = await chrome.tabs.get(tabId);
-    updateBadge(tabId, tab.url);
+    updateIcon(tabId, tab.url);
 });
 
 // Single click to switch environments
