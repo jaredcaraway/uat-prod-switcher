@@ -5,10 +5,10 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 const ksc = /https:\/\/.*\.kelsey-seybold\.com/;
-const sitecore = /https:\/\/.*\.ksnet\.com'/;
+const sitecore = /https:\/\/.*\.ksnet\.com/;
 
 chrome.action.onClicked.addListener(async(tab) => {
-    if (tab.url.search(sitecore) || tab.url.search(ksc)) {
+    if (tab.url.match(sitecore) || tab.url.match(ksc)) {
         // Retrieve the action badge to check if the extension is on or off
         const prevState = await chrome.action.getBadgeText({ tabId: tab.id });
         // Next state will always be the opposite
