@@ -4,10 +4,19 @@
 
     function removeBanner() {
         const banner = document.getElementById(BANNER_ID);
-        const style = document.getElementById(STYLE_ID);
-        if (banner) banner.remove();
-        if (style) style.remove();
-        document.body.style.removeProperty("margin-top");
+        if (!banner) return;
+
+        banner.style.animation = "uat-banner-slide-out 0.3s cubic-bezier(0.5, 0, 0.84, 0) forwards";
+        document.body.style.transition = "margin-top 0.3s cubic-bezier(0.5, 0, 0.84, 0)";
+        document.body.style.marginTop = "0px";
+
+        banner.addEventListener("animationend", () => {
+            banner.remove();
+            const style = document.getElementById(STYLE_ID);
+            if (style) style.remove();
+            document.body.style.removeProperty("margin-top");
+            document.body.style.removeProperty("transition");
+        }, { once: true });
     }
 
     function injectBanner(uatSub) {
@@ -62,6 +71,11 @@
             @keyframes uat-banner-slide-in {
                 from { transform: translateY(-100%); }
                 to { transform: translateY(0); }
+            }
+
+            @keyframes uat-banner-slide-out {
+                from { transform: translateY(0); }
+                to { transform: translateY(-100%); }
             }
 
             #${BANNER_ID} span {
