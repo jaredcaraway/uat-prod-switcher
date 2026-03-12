@@ -2,6 +2,7 @@ const DEFAULTS = {
     prodSub: "www.",
     uatSub: "uatnew-www.",
     domains: ["kelsey-seybold.com", "ksnet.com"],
+    showBanner: true,
 };
 
 let settings = { ...DEFAULTS };
@@ -45,6 +46,18 @@ async function updateBadge(tabId, url) {
     }
 }
 
+async function injectBanner(tabId, url) {
+    if (!matchesDomain(url) || !isUat(url)) return;
+    try {
+        await chrome.scripting.executeScript({
+            files: ["banner.js"],
+            target: { tabId },
+        });
+    } catch (e) {
+        // Tab may not be injectable (e.g. chrome:// pages)
+    }
+}
+
 // Load settings on startup
 loadSettings();
 
@@ -58,10 +71,13 @@ chrome.storage.onChanged.addListener((changes, area) => {
     }
 });
 
-// Update badge when a tab's URL changes
+// Update badge and inject banner when a tab's URL changes
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
     if (changeInfo.url || changeInfo.status === "complete") {
         updateBadge(tabId, tab.url);
+    }
+    if (changeInfo.status === "complete") {
+        injectBanner(tabId, tab.url);
     }
 });
 
