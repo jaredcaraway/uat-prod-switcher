@@ -109,71 +109,61 @@
             color: #475569;
         }
 
-        .domain-list {
+        .field-stack {
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            margin-bottom: 12px;
+            gap: 14px;
+            margin-bottom: 16px;
         }
 
-        .domain-item {
+        .field-error {
+            font-size: 13px;
+            color: #f87171;
+            margin-top: 10px;
+        }
+
+        .field-error:empty {
+            display: none;
+        }
+
+        .preview-hint {
+            font-size: 12px;
+            color: #64748b;
+            margin-left: auto;
+        }
+
+        .notice {
             display: flex;
             align-items: center;
-            gap: 8px;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            border-radius: 12px;
+            font-size: 13px;
+            color: #fcd34d;
         }
 
-        .domain-item input {
-            flex: 1;
+        .notice[hidden] {
+            display: none;
         }
 
-        .btn-remove {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: transparent;
-            border: 1px solid #334155;
+        .btn-grant {
+            padding: 8px 16px;
+            background: #F59E0B;
+            border: none;
             border-radius: 8px;
-            color: #ef4444;
-            font-size: 18px;
+            color: #000;
+            font-size: 13px;
+            font-weight: 600;
             cursor: pointer;
-            transition: background 0.15s, border-color 0.15s;
             flex-shrink: 0;
         }
 
-        .btn-remove:hover {
-            background: rgba(239, 68, 68, 0.1);
-            border-color: #ef4444;
-        }
-
-        .btn-remove:disabled {
-            opacity: 0.3;
-            cursor: not-allowed;
-        }
-
-        .btn-remove:disabled:hover {
-            background: transparent;
-            border-color: #334155;
-        }
-
-        .btn-add {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 14px;
-            background: transparent;
-            border: 1px dashed #475569;
-            border-radius: 8px;
-            color: #94a3b8;
-            font-size: 13px;
-            cursor: pointer;
-            transition: border-color 0.15s, color 0.15s;
-        }
-
-        .btn-add:hover {
-            border-color: #6366f1;
-            color: #c7d2fe;
+        .btn-grant:hover {
+            background: #fbbf24;
         }
 
         .actions {
@@ -281,6 +271,7 @@
 
         .preview {
             display: flex;
+            flex-wrap: wrap;
             align-items: center;
             gap: 16px;
             padding: 16px;
@@ -434,36 +425,36 @@
     <div class="container">
         <div class="header">
             <h1>UAT-PROD Switcher</h1>
-            <p>Configure environments and domains for one-click switching.</p>
+            <p>Set up your production and UAT sites for one-click switching.</p>
+        </div>
+
+        <div class="notice" id="accessNotice" hidden>
+            <span>The UAT banner needs access to your two sites in this browser.</span>
+            <button class="btn-grant" id="grantAccess">Grant access</button>
         </div>
 
         <div class="card">
-            <div class="card-title">Subdomains</div>
-            <div class="card-description">Define the subdomain prefixes for each environment.</div>
-            <div class="field-group">
+            <div class="card-title">Your environments</div>
+            <div class="card-description">Paste a link to any page on each site. The extension works out what changes between them.</div>
+            <div class="field-stack">
                 <div class="field">
-                    <label for="prodSub">Production</label>
-                    <input type="text" id="prodSub" placeholder="www.">
+                    <label for="prodUrl">Production example</label>
+                    <input type="text" id="prodUrl" placeholder="https://www.example.com/about" spellcheck="false" autocomplete="off">
                 </div>
                 <div class="field">
-                    <label for="uatSub">UAT</label>
-                    <input type="text" id="uatSub" placeholder="uatnew-www.">
+                    <label for="uatUrl">UAT example</label>
+                    <input type="text" id="uatUrl" placeholder="https://uat.example.com/about" spellcheck="false" autocomplete="off">
                 </div>
             </div>
             <div class="preview" id="preview">
                 <span class="preview-badge prod">PRD</span>
-                <span class="preview-url"><em id="previewProd">www.</em>example.com</span>
+                <span class="preview-url" id="previewProd"></span>
                 <span class="preview-arrow">&harr;</span>
                 <span class="preview-badge uat">UAT</span>
-                <span class="preview-url"><em id="previewUat">uatnew-www.</em>example.com</span>
+                <span class="preview-url" id="previewUat"></span>
+                <span class="preview-hint" id="previewHint"></span>
             </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Domains</div>
-            <div class="card-description">The extension activates only on these domains. Add your own to use it beyond Kelsey-Seybold.</div>
-            <div class="domain-list" id="domainList"></div>
-            <button class="btn-add" id="addDomain">+ Add domain</button>
+            <div class="field-error" id="envError"></div>
         </div>
 
         <div class="card">
@@ -495,7 +486,7 @@
                 <kbd>Alt + Shift + U</kbd>
             </div>
             <div style="margin-top: 12px;">
-                <a class="shortcut-link" id="openShortcuts">Change in Chrome settings &rarr;</a>
+                <a class="shortcut-link" id="openShortcuts">Change in browser settings &rarr;</a>
             </div>
         </div>
 
@@ -507,6 +498,7 @@
 
     <div class="toast" id="toast">Settings saved</div>
 
+    <script src="env.js"></script>
     <script src="options.js"></script>
 </body>
 </html>
