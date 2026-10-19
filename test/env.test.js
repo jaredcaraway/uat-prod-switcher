@@ -85,3 +85,10 @@ test("isConfigured requires both origins", () => {
     assert.equal(Env.isConfigured(acme), true);
     assert.equal(Env.isConfigured({ prodOrigin: "https://www.acme.com", uatOrigin: "" }), false);
 });
+
+test("parseUrl treats host:port without a scheme as https", () => {
+    assert.equal(Env.parseUrl("localhost:3000").origin, "https://localhost:3000");
+    assert.equal(Env.parseUrl("uat.acme.com:8443/x").origin, "https://uat.acme.com:8443");
+    assert.ok(Env.parseUrl("file:///tmp/x").error);
+    assert.ok(Env.parseUrl("chrome://extensions").error);
+});

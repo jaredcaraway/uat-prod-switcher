@@ -4,7 +4,10 @@ const Env = (() => {
         const raw = (input || "").trim();
         if (!raw) return { error: "Enter a URL" };
 
-        const withScheme = /^[a-z][a-z0-9+.-]*:/i.test(raw) ? raw : `https://${raw}`;
+        // "host:port" looks like a scheme to URL(), so treat it as scheme-less
+        const isHostPort = /^[^/:?#]+:\d+(?:[/?#]|$)/.test(raw);
+        const hasScheme = !isHostPort && /^[a-z][a-z0-9+.-]*:/i.test(raw);
+        const withScheme = hasScheme ? raw : `https://${raw}`;
         let url;
         try {
             url = new URL(withScheme);
