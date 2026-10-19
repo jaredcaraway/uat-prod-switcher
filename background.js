@@ -71,7 +71,7 @@ chrome.runtime.onInstalled.addListener(({ reason }) => {
     if (reason === "install") {
         chrome.runtime.openOptionsPage();
     } else if (reason === "update") {
-        // Settings from 1.x (Kelsey-Seybold-specific subdomain swap)
+        // Drop settings from 1.x (fixed subdomain prefixes + domain list)
         chrome.storage.sync.remove(["prodSub", "uatSub", "domains"]);
     }
 });
