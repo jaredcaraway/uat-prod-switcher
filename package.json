@@ -1,0 +1,9 @@
+{
+    "name": "uat-prod-switcher",
+    "version": "2.0.0",
+    "private": true,
+    "scripts": {
+        "test": "node --test",
+        "build": "node build.js"
+    }
+}
