@@ -19,12 +19,10 @@
         }, { once: true });
     }
 
-    function injectBanner(uatSub) {
+    // Only injected on UAT pages; the background script checks the URL
+    function injectBanner() {
         // Don't inject twice
         if (document.getElementById(BANNER_ID)) return;
-
-        const isUat = window.location.href.includes(uatSub);
-        if (!isUat) return;
 
         const banner = document.createElement("div");
         banner.id = BANNER_ID;
@@ -114,11 +112,8 @@
         }
     });
 
-    chrome.storage.sync.get(
-        { showBanner: true, uatSub: "uatnew-www." },
-        (settings) => {
-            if (!settings.showBanner) return;
-            injectBanner(settings.uatSub);
-        }
-    );
+    chrome.storage.sync.get({ showBanner: true }, (settings) => {
+        if (!settings.showBanner) return;
+        injectBanner();
+    });
 })();
