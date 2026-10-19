@@ -19,6 +19,11 @@ VARIANTS = {
         "knob_side": "right",
         "label": "PRD",
     },
+    "neutral": {
+        "track_color": (148, 163, 184),  # Slate-400
+        "knob_side": "center",
+        "label": None,
+    },
 }
 
 
@@ -41,7 +46,8 @@ def draw_icon(size, variant):
     track_h = int(28 * scale)
     track_w = int(56 * scale)
     track_x = (size - track_w) // 2
-    track_y = int(30 * scale)
+    # Without a label, centre the toggle vertically
+    track_y = int(30 * scale) if v["label"] else (size - track_h) // 2
     track_radius = track_h // 2
 
     draw.rounded_rectangle(
@@ -55,6 +61,8 @@ def draw_icon(size, variant):
     knob_cy = track_y + track_h // 2
     if v["knob_side"] == "right":
         knob_cx = track_x + track_w - track_radius
+    elif v["knob_side"] == "center":
+        knob_cx = track_x + track_w // 2
     else:
         knob_cx = track_x + track_radius
 
@@ -65,6 +73,8 @@ def draw_icon(size, variant):
 
     # Label text below the toggle
     label = v["label"]
+    if label is None:
+        return img
     font_size = int(32 * scale)
     # Try to load a bold system font; fall back to default
     font = None
@@ -97,14 +107,14 @@ def draw_icon(size, variant):
 os.makedirs("images/uat", exist_ok=True)
 os.makedirs("images/prod", exist_ok=True)
 
-for variant in VARIANTS:
+for variant in ("uat", "prod"):
     for s in SIZES:
         icon = draw_icon(s, variant)
         icon.save(f"images/{variant}/icon{s}.png")
         print(f"Generated {variant}/icon{s}.png")
 
-# Also generate default icons (UAT state) at the top level for manifest
+# Neutral icons at the top level: manifest/store icon and unconfigured pages
 for s in SIZES:
-    icon = draw_icon(s, "uat")
+    icon = draw_icon(s, "neutral")
     icon.save(f"images/icon{s}.png")
     print(f"Generated default icon{s}.png")
