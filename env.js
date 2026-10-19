@@ -17,10 +17,16 @@ const Env = (() => {
         if (url.protocol !== "http:" && url.protocol !== "https:") {
             return { error: "Only http and https sites are supported" };
         }
+        // "www.acme.com." is the same site as "www.acme.com"
+        if (url.hostname.endsWith(".")) url.hostname = url.hostname.slice(0, -1);
         if (!url.hostname || /\s/.test(raw)) {
             return { error: `"${raw}" isn't a valid URL` };
         }
         return { origin: url.origin, host: url.host, hostname: url.hostname };
+    }
+
+    function isIpAddress(hostname) {
+        return hostname.startsWith("[") || /^\d+(\.\d+){3}$/.test(hostname);
     }
 
     function detect(prodInput, uatInput) {
@@ -45,8 +51,8 @@ const Env = (() => {
         }
 
         const result = { prodOrigin: prod.origin, uatOrigin: uat.origin };
-        // Sharing only the TLD (or nothing) isn't a meaningful root.
-        if (shared < 2) {
+        // Sharing only the TLD (or nothing) isn't a meaningful root, and IPs have no root at all.
+        if (shared < 2 || isIpAddress(prod.hostname) || isIpAddress(uat.hostname)) {
             return { ...result, root: "", prodPrefix: prod.host, uatPrefix: uat.host, wholeHost: true };
         }
         return {

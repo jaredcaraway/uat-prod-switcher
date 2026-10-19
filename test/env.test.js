@@ -92,3 +92,16 @@ test("parseUrl treats host:port without a scheme as https", () => {
     assert.ok(Env.parseUrl("file:///tmp/x").error);
     assert.ok(Env.parseUrl("chrome://extensions").error);
 });
+
+test("parseUrl strips a trailing dot from the hostname", () => {
+    const r = Env.parseUrl("https://www.acme.com./x");
+    assert.equal(r.origin, "https://www.acme.com");
+    assert.equal(r.host, "www.acme.com");
+    assert.equal(r.hostname, "www.acme.com");
+    assert.equal(Env.parseUrl("http://localhost.:3000").origin, "http://localhost:3000");
+});
+
+test("detect treats IP address pairs as a whole-host swap", () => {
+    assert.equal(Env.detect("http://10.0.0.1", "http://11.0.0.1").wholeHost, true);
+    assert.equal(Env.detect("http://[::1]:3000", "https://www.acme.com").wholeHost, true);
+});
