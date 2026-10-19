@@ -36,7 +36,7 @@ async function updateIcon(tabId, url) {
     } else {
         icon = env;
         title = env === "uat" ? "Switch to PRD" : "Switch to UAT";
-        if (!(await hasSiteAccess(settings))) {
+        if (settings.showBanner && !(await hasSiteAccess(settings))) {
             title += " (banner needs site access: see settings)";
         }
     }
@@ -67,12 +67,15 @@ async function refreshActiveTab() {
     if (tab) updateIcon(tab.id, tab.url);
 }
 
-chrome.runtime.onInstalled.addListener(({ reason }) => {
+chrome.runtime.onInstalled.addListener(({ reason, previousVersion }) => {
     if (reason === "install") {
         chrome.runtime.openOptionsPage();
-    } else if (reason === "update") {
-        // Drop settings from 1.x (fixed subdomain prefixes + domain list)
+    } else if (reason === "update" && previousVersion && previousVersion.startsWith("1.")) {
+        // Drop settings from 1.x (fixed subdomain prefixes + domain list) and the
+        // all-sites access it required. Chrome keeps that grant across the update,
+        // and nothing is configured yet that this could revoke.
         chrome.storage.sync.remove(["prodSub", "uatSub", "domains"]);
+        chrome.permissions.remove({ origins: ["https://*/*"] }).catch(() => {});
     }
 });
 
@@ -95,8 +98,12 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 
 // Update icon when switching tabs
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
-    const tab = await chrome.tabs.get(tabId);
-    updateIcon(tabId, tab.url);
+    try {
+        const tab = await chrome.tabs.get(tabId);
+        updateIcon(tabId, tab.url);
+    } catch (e) {
+        // Tab closed before we could read it
+    }
 });
 
 // Single click (or the shortcut) switches environments

@@ -64,15 +64,16 @@ function updatePreview() {
 
 async function updateAccessNotice() {
     const origins = Env.originPatterns(saved);
-    const granted = origins.length === 0 || (await chrome.permissions.contains({ origins }));
-    accessNoticeEl.hidden = granted;
+    // Site access only matters for the banner
+    const needed = saved.showBanner && origins.length > 0;
+    accessNoticeEl.hidden = !needed || (await chrome.permissions.contains({ origins }));
 }
 
 // Drop access to sites that are no longer configured
 function removeStaleAccess(newSettings) {
     const keep = new Set(Env.originPatterns(newSettings));
     const stale = Env.originPatterns(saved).filter((o) => !keep.has(o));
-    if (stale.length) chrome.permissions.remove({ origins: stale });
+    if (stale.length) chrome.permissions.remove({ origins: stale }).catch(() => {});
 }
 
 function showToast(message) {
@@ -80,6 +81,10 @@ function showToast(message) {
     toast.textContent = message;
     toast.classList.add("visible");
     setTimeout(() => toast.classList.remove("visible"), 2000);
+}
+
+function showAccessError(e) {
+    showToast(`Couldn't request site access: ${e.message}`);
 }
 
 function applySettings(settings) {
@@ -92,8 +97,11 @@ function applySettings(settings) {
     updateAccessNotice();
 }
 
-// Load saved settings
+// Load saved settings, and follow changes made elsewhere (another tab or a synced browser)
 chrome.storage.sync.get(DEFAULTS, applySettings);
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === "sync") chrome.storage.sync.get(DEFAULTS, applySettings);
+});
 
 // Live preview
 prodUrlEl.addEventListener("input", updatePreview);
@@ -106,7 +114,10 @@ showBannerEl.addEventListener("change", () => {
 
 // Grant access for already-configured sites (e.g. settings synced from another browser)
 document.getElementById("grantAccess").addEventListener("click", () => {
-    chrome.permissions.request({ origins: Env.originPatterns(saved) }).then(updateAccessNotice);
+    chrome.permissions
+        .request({ origins: Env.originPatterns(saved) })
+        .then(updateAccessNotice)
+        .catch(showAccessError);
 });
 
 // Save
@@ -125,17 +136,20 @@ document.getElementById("save").addEventListener("click", () => {
     };
 
     // Must be the first async call in the handler to keep the user gesture
-    chrome.permissions.request({ origins: Env.originPatterns(settings) }).then((granted) => {
-        if (!granted) {
-            showToast("Site access is needed for these two sites");
-            return;
-        }
-        removeStaleAccess(settings);
-        chrome.storage.sync.set(settings, () => {
-            applySettings(settings);
-            showToast("Settings saved");
-        });
-    });
+    chrome.permissions
+        .request({ origins: Env.originPatterns(settings) })
+        .then((granted) => {
+            if (!granted) {
+                showToast("Site access is needed for these two sites");
+                return;
+            }
+            removeStaleAccess(settings);
+            chrome.storage.sync.set(settings, () => {
+                applySettings(settings);
+                showToast("Settings saved");
+            });
+        })
+        .catch(showAccessError);
 });
 
 // Reset

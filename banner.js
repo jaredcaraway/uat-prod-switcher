@@ -105,12 +105,17 @@
         document.body.style.setProperty("margin-top", "32px", "important");
     }
 
-    // Listen for setting changes to remove banner in real time
-    chrome.storage.onChanged.addListener((changes, area) => {
-        if (area === "sync" && changes.showBanner && !changes.showBanner.newValue) {
-            removeBanner();
-        }
-    });
+    // The script is re-injected on every page load event; listen only once per page
+    if (!window.__uatProdSwitcherListening) {
+        window.__uatProdSwitcherListening = true;
+
+        // Show or remove the banner in real time as the setting changes
+        chrome.storage.onChanged.addListener((changes, area) => {
+            if (area !== "sync" || !changes.showBanner) return;
+            if (changes.showBanner.newValue) injectBanner();
+            else removeBanner();
+        });
+    }
 
     chrome.storage.sync.get({ showBanner: true }, (settings) => {
         if (!settings.showBanner) return;
